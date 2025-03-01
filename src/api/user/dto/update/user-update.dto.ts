@@ -1,6 +1,6 @@
 import { IsEmail, IsMobilePhone, IsOptional, IsString, IsStrongPassword, IsUrl, Length } from 'class-validator';
 
-export class UpdateUserDto {
+export class UserUpdateDto {
   @IsOptional()
   @IsString()
   @Length(3, 20)

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class SignInDataDto {
+export class SuccessDto {
   @ApiProperty()
-  accessToken: string;
+  success: boolean;
 }

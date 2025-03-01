@@ -33,11 +33,10 @@ model User {
 
 model Token {
   id           Int      @id @default(autoincrement())
+  agent        String?
+  refreshToken String   @unique
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       Int
-  agent        String?
-  accessToken  String   @unique
-  refreshToken String   @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt()
 

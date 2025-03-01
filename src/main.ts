@@ -13,12 +13,23 @@ import { LoggerInterceptor } from './logger/logger.interceptor';
 
   const config = app.get<ConfigService>(ConfigService);
   const PORT = config.get<string>('PORT') || 3030;
+  const DEBUG = config.get<string>('DEBUG') === 'true';
   const CLIENT_URL = config.getOrThrow<string>('CLIENT_URL');
 
   app.use(cookies());
-  app.useGlobalInterceptors(new LoggerInterceptor());
-  app.enableCors({ credentials: true, origin: JSON.parse(CLIENT_URL) });
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }));
+
+  app.enableCors({
+    credentials: true,
+    origin: CLIENT_URL
+  });
+
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    transform: true,
+    forbidNonWhitelisted: true
+  }));
+
+  if (DEBUG) app.useGlobalInterceptors(new LoggerInterceptor());
 
   const swaggerConfig = new DocumentBuilder()
     .addBearerAuth()

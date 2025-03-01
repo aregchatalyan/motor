@@ -23,10 +23,9 @@ CREATE TABLE "users" (
 -- CreateTable
 CREATE TABLE "tokens" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
     "agent" TEXT,
-    "accessToken" TEXT NOT NULL,
     "refreshToken" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -40,10 +39,7 @@ CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 CREATE UNIQUE INDEX "users_secret_key" ON "users"("secret");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "tokens_accessToken_key" ON "tokens"("accessToken");
-
--- CreateIndex
 CREATE UNIQUE INDEX "tokens_refreshToken_key" ON "tokens"("refreshToken");
 
 -- AddForeignKey
-ALTER TABLE "tokens" ADD CONSTRAINT "tokens_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "tokens" ADD CONSTRAINT "tokens_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

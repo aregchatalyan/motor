@@ -7,9 +7,9 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { compare, hash } from '../../utils/bcrypt';
 import { SignUpDto } from './dto/sign-up/sign-up.dto';
 import { SignInDto } from './dto/sign-in/sign-in.dto';
-import { JwtPayload, UserPayload } from './strategies/jwt-access.strategy';
 import { MailerService } from '../../mailer/mailer.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { JwtPayload, UserPayload } from './strategies/jwt-access.strategy';
 
 @Injectable()
 export class AuthService {
@@ -21,13 +21,17 @@ export class AuthService {
   ) {}
 
   async signup(dto: SignUpDto) {
-    const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const exists = await this.prisma.user.findUnique({
+      where: { email: dto.email }
+    });
     if (exists) throw new BadRequestException();
 
     const secret = randomUUID();
     const password = await hash(dto.password);
 
-    const user = await this.prisma.user.create({ data: { ...dto, password, secret } });
+    const user = await this.prisma.user.create({
+      data: { ...dto, password, secret }
+    });
 
     await this.mailer.sendMail({
       to: user.email,
@@ -35,6 +39,8 @@ export class AuthService {
       template: 'confirm',
       context: { name: user.name, secret }
     });
+
+    return { success: true }
   }
 
   async signin(dto: SignInDto, agent?: string) {
@@ -46,12 +52,16 @@ export class AuthService {
     const correct = await compare(dto.password, user.password);
     if (!correct) throw new BadRequestException();
 
-    const { accessToken, refreshToken, expiresIn } = this.generateTokens({ userId: user.id, email: user.email });
+    const {
+      accessToken, refreshToken, expiresIn
+    } = this.generateTokens({
+      userId: user.id, email: user.email
+    });
 
     await this.prisma.token.create({
       data: {
-        user: { connect: { id: user.id } },
-        agent, accessToken, refreshToken
+        agent, refreshToken,
+        user: { connect: { id: user.id } }
       }
     });
 
@@ -63,6 +73,8 @@ export class AuthService {
       await this.prisma.token.delete({
         where: { refreshToken }
       });
+
+      return { success: true }
     } catch (e) {
       throw new UnauthorizedException();
     }
@@ -74,6 +86,8 @@ export class AuthService {
         where: { secret },
         data: { active: true, confirmed: true, secret: null }
       });
+
+      return { success: true }
     } catch (e) {
       throw new BadRequestException();
     }
@@ -85,37 +99,43 @@ export class AuthService {
 
   async remove(user: UserPayload) {
     try {
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { active: false }
-      });
-      await this.prisma.token.deleteMany({
-        where: { userId: user.id }
-      });
+      await this.prisma.$transaction([
+        this.prisma.user.update({
+          where: { id: user.id },
+          data: { active: false }
+        }),
+        this.prisma.token.deleteMany({
+          where: { userId: user.id }
+        })
+      ]);
+
+      return { success: true }
     } catch (e) {
       throw new BadRequestException();
     }
   }
 
   async refresh(user: UserPayload, token: string, agent?: string) {
-    const { accessToken, refreshToken, expiresIn } = this.generateTokens({ userId: user.id, email: user.email });
-
-    const old = user.tokens.find(({ refreshToken }) => refreshToken === token);
+    const {
+      accessToken, refreshToken, expiresIn
+    } = this.generateTokens({
+      userId: user.id, email: user.email
+    });
 
     try {
       await this.prisma.token.update({
-        where: { refreshToken: old?.refreshToken },
-        data: { agent, accessToken, refreshToken }
+        where: { refreshToken: token },
+        data: { agent, refreshToken }
       });
 
-      return { accessToken, refreshToken, maxAge: ms(expiresIn) };
+      return { accessToken, refreshToken, maxAge: ms(expiresIn) }
     } catch (e) {
       throw new UnauthorizedException();
     }
   }
 
   private generateTokens(payload: JwtPayload) {
-    const expiresIn = this.config.get<ms.StringValue>('JWT_REFRESH_EXPIRES') || '7d';
+    const expiresIn = this.config.getOrThrow<ms.StringValue>('JWT_REFRESH_EXPIRES');
 
     const accessToken = this.jwt.sign({ userId: payload.userId, email: payload.email })
     const refreshToken = this.jwt.sign({ userId: payload.userId, email: payload.email }, {
@@ -129,6 +149,7 @@ export class AuthService {
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async clean() {
     const tokens = await this.prisma.token.findMany();
+
     for (const token of tokens) {
       try {
         this.jwt.verify(token.refreshToken, {
@@ -138,7 +159,6 @@ export class AuthService {
         await this.prisma.token.delete({
           where: { id: token.id }
         });
-        console.log(`Deleting token: ${ token.id }`);
       }
     }
   }

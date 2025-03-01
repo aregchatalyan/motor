@@ -5,7 +5,7 @@ import { CallHandler, ExecutionContext, HttpException, Injectable, Logger, NestI
 @Injectable()
 export class LoggerInterceptor implements NestInterceptor {
   private readonly logger = new Logger('HTTP');
-
+  // TODO 401 not processing
   intercept(context: ExecutionContext, next: CallHandler) {
     const req = context.switchToHttp().getRequest();
     const res = context.switchToHttp().getResponse();

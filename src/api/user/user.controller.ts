@@ -1,10 +1,11 @@
 import { Body, Controller, Patch, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiOkResponse } from '@nestjs/swagger';
 import { multer } from '../../utils/multer';
 import { UserService } from './user.service';
 import { CurrentUser } from '../auth/auth.decorator';
-import { UpdateUserDto } from './dto/update/update-user.dto';
+import { UserDataDto } from './dto/update/user-data.dto';
+import { UserUpdateDto } from './dto/update/user-update.dto';
 import { JwtAccessGuard } from '../auth/guards/jwt-access.guard';
 import { UserPayload } from '../auth/strategies/jwt-access.strategy';
 
@@ -22,9 +23,10 @@ export class UserController {
   }
 
   @ApiBearerAuth()
+  @ApiOkResponse({ type: UserDataDto })
   @UseGuards(JwtAccessGuard)
-  @Patch()
-  update(@Body() dto: UpdateUserDto, @CurrentUser() user: UserPayload) {
+  @Patch('/update')
+  update(@Body() dto: UserUpdateDto, @CurrentUser() user: UserPayload) {
     return this.user.update(dto, user);
   }
 }

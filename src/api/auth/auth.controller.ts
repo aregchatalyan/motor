@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
 import { ApiBearerAuth, ApiCookieAuth, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './auth.decorator';
+import { AccessDto } from './dto/access.dto';
+import { SuccessDto } from './dto/success.dto';
 import { MeDataDto } from './dto/me/me-data.dto';
 import { SignUpDto } from './dto/sign-up/sign-up.dto';
 import { SignInDto } from './dto/sign-in/sign-in.dto';
-import { SignUpDataDto } from './dto/sign-up/sign-up-data.dto';
-import { SignInDataDto } from './dto/sign-in/sign-in-data.dto';
+import { ConfirmDto } from './dto/confirm/confirm.dto';
 import { JwtAccessGuard } from './guards/jwt-access.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { UserPayload } from './strategies/jwt-access.strategy';
@@ -16,13 +17,13 @@ import { UserPayload } from './strategies/jwt-access.strategy';
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
-  @ApiCreatedResponse({ type: SignUpDataDto })
+  @ApiCreatedResponse({ type: SuccessDto })
   @Post('/signup')
   signup(@Body() dto: SignUpDto) {
     return this.auth.signup(dto);
   }
 
-  @ApiOkResponse({ type: SignInDataDto })
+  @ApiOkResponse({ type: AccessDto })
   @HttpCode(HttpStatus.OK)
   @Post('/signin')
   async signin(
@@ -39,20 +40,25 @@ export class AuthController {
   }
 
   @ApiBearerAuth()
+  @ApiOkResponse({ type: SuccessDto })
   @UseGuards(JwtAccessGuard)
   @HttpCode(HttpStatus.OK)
   @Post('/signout')
-  async signout(@Req() req: Request, @Res() res: Response) {
-    const { refreshToken } = req.cookies;
-    await this.auth.signout(refreshToken);
+  async signout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const token = req.cookies['refreshToken'] as string;
+
+    const { success } = await this.auth.signout(token);
 
     res.clearCookie('refreshToken');
-    res.end();
+
+    return { success };
   }
 
-  @Get('/confirm/:secret')
-  confirm(@Param('secret') secret: string) {
-    return this.auth.confirm(secret);
+  @ApiOkResponse({ type: SuccessDto })
+  @HttpCode(HttpStatus.OK)
+  @Post('/confirm')
+  confirm(@Body() body: ConfirmDto) {
+    return this.auth.confirm(body.secret);
   }
 
   @ApiBearerAuth()
@@ -64,6 +70,7 @@ export class AuthController {
   }
 
   @ApiBearerAuth()
+  @ApiOkResponse({ type: SuccessDto })
   @UseGuards(JwtAccessGuard)
   @Delete('/remove')
   remove(@CurrentUser() user: UserPayload) {
@@ -71,6 +78,7 @@ export class AuthController {
   }
 
   @ApiCookieAuth()
+  @ApiOkResponse({ type: AccessDto })
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.OK)
   @Post('/refresh')
