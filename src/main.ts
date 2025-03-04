@@ -23,6 +23,8 @@ import { LoggerInterceptor } from './logger/logger.interceptor';
     origin: CLIENT_URL
   });
 
+  app.setGlobalPrefix('/api');
+
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     transform: true,

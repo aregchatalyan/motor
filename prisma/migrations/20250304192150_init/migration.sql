@@ -26,6 +26,7 @@ CREATE TABLE "tokens" (
     "agent" TEXT,
     "refreshToken" TEXT NOT NULL,
     "userId" INTEGER NOT NULL,
+    "expiredAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

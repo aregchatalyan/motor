@@ -6,6 +6,7 @@ import { AuthModule } from './api/auth/auth.module';
 import { UserModule } from './api/user/user.module';
 import { FileModule } from './api/file/file.module';
 import { MailerModule } from './mailer/mailer.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { MailerModule } from './mailer/mailer.module';
       isGlobal: true,
       expandVariables: true
     }),
+    ScheduleModule.forRoot(),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../uploads'),
       serveRoot: '/uploads'

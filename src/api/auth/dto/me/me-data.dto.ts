@@ -7,6 +7,7 @@ class TokenDto implements Token {
   agent: string | null;
   accessToken: string;
   refreshToken: string;
+  expiredAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }

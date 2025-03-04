@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { compare, hash } from '../../utils/bcrypt';
 import { SignUpDto } from './dto/sign-up/sign-up.dto';
 import { SignInDto } from './dto/sign-in/sign-in.dto';
@@ -13,6 +13,8 @@ import { JwtPayload, UserPayload } from './strategies/jwt-access.strategy';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
@@ -60,7 +62,9 @@ export class AuthService {
 
     await this.prisma.token.create({
       data: {
-        agent, refreshToken,
+        agent,
+        refreshToken,
+        expiredAt: new Date(Date.now() + ms(expiresIn)),
         user: { connect: { id: user.id } }
       }
     });
@@ -146,20 +150,14 @@ export class AuthService {
     return { accessToken, refreshToken, expiresIn }
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async clean() {
-    const tokens = await this.prisma.token.findMany();
+    this.logger.warn('Expired tokens removal has begun.');
 
-    for (const token of tokens) {
-      try {
-        this.jwt.verify(token.refreshToken, {
-          secret: this.config.get<string>('JWT_REFRESH_SECRET')
-        });
-      } catch (e) {
-        await this.prisma.token.delete({
-          where: { id: token.id }
-        });
-      }
-    }
+    const {count} = await this.prisma.token.deleteMany({
+      where: { expiredAt: { lt: new Date() } }
+    });
+
+    this.logger.warn(`${ count } expired token(s) have been removed.`);
   }
 }
