@@ -154,7 +154,7 @@ export class AuthService {
   async clean() {
     this.logger.warn('Expired tokens removal has begun.');
 
-    const {count} = await this.prisma.token.deleteMany({
+    const { count } = await this.prisma.token.deleteMany({
       where: { expiredAt: { lt: new Date() } }
     });
 

@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { hash } from '../../utils/bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserUpdateDto } from './dto/update/user-update.dto';
 import { UserPayload } from '../auth/strategies/jwt-access.strategy';
@@ -20,8 +21,12 @@ export class UserService {
     }
   }
 
-  update(dto: UserUpdateDto, user: UserPayload) {
+  async update(dto: UserUpdateDto, user: UserPayload) {
     try {
+      if (dto.password) {
+        dto.password = await hash(dto.password);
+      }
+
       return this.prisma.user.update({
         where: { id: user.id },
         data: dto,
