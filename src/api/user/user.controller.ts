@@ -3,11 +3,11 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiOkResponse } from '@nestjs/swagger';
 import { multer } from '../../utils/multer';
 import { UserService } from './user.service';
+import { UserPayload } from '../auth/guards/types';
 import { CurrentUser } from '../auth/auth.decorator';
 import { UserDataDto } from './dto/update/user-data.dto';
 import { UserUpdateDto } from './dto/update/user-update.dto';
 import { JwtAccessGuard } from '../auth/guards/jwt-access.guard';
-import { UserPayload } from '../auth/strategies/jwt-access.strategy';
 
 @Controller('user')
 export class UserController {

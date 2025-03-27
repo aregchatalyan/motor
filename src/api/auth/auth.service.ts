@@ -7,9 +7,9 @@ import { BadRequestException, Injectable, Logger, UnauthorizedException } from '
 import { compare, hash } from '../../utils/bcrypt';
 import { SignUpDto } from './dto/sign-up/sign-up.dto';
 import { SignInDto } from './dto/sign-in/sign-in.dto';
+import { JwtPayload, UserPayload } from './guards/types';
 import { MailerService } from '../../mailer/mailer.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { JwtPayload, UserPayload } from './strategies/jwt-access.strategy';
 
 @Injectable()
 export class AuthService {

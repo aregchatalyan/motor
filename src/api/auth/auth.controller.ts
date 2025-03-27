@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiCookieAuth, ApiCreatedResponse, ApiOkResponse } from 
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './auth.decorator';
+import { UserPayload } from './guards/types';
 import { AccessDto } from './dto/access.dto';
 import { SuccessDto } from './dto/success.dto';
 import { MeDataDto } from './dto/me/me-data.dto';
@@ -11,7 +12,6 @@ import { SignInDto } from './dto/sign-in/sign-in.dto';
 import { ConfirmDto } from './dto/confirm/confirm.dto';
 import { JwtAccessGuard } from './guards/jwt-access.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
-import { UserPayload } from './strategies/jwt-access.strategy';
 
 @Controller('auth')
 export class AuthController {
@@ -44,7 +44,10 @@ export class AuthController {
   @UseGuards(JwtAccessGuard)
   @HttpCode(HttpStatus.OK)
   @Post('/signout')
-  async signout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  async signout(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ) {
     const token = req.cookies['refreshToken'] as string;
 
     const { success } = await this.auth.signout(token);

@@ -1,15 +1,13 @@
 import cookies from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { LoggerInterceptor } from './logger/logger.interceptor';
 
 (async () => {
-  const app = await NestFactory.create(AppModule, {
-    logger: new ConsoleLogger({ prefix: 'Motor' })
-  });
+  const app = await NestFactory.create(AppModule);
 
   const config = app.get<ConfigService>(ConfigService);
   const PORT = config.get<string>('PORT') || 3030;
