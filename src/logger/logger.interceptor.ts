@@ -14,7 +14,7 @@ export class LoggerInterceptor implements NestInterceptor {
     const startTime = Date.now();
 
     const info = {
-      url: req.originalUrl,
+      url: req.url,
       method: req.method,
       params: req.params,
       query: req.query,

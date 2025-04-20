@@ -4,7 +4,6 @@ import { JwtAccessGuard } from '../auth/guards/jwt-access.guard';
 
 @Controller('uploads')
 export class FileController {
-
   @UseGuards(JwtAccessGuard)
   @Get(':filename')
   getFile(@Next() next: NextFunction) {

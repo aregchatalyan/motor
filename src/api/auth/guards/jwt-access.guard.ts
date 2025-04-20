@@ -2,8 +2,8 @@ import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
 import { JwtPayload, UserPayload } from './types';
+import { PrismaService } from '../../../prisma/prisma.service';
 
 @Injectable()
 export class JwtAccessGuard implements CanActivate {
@@ -37,6 +37,7 @@ export class JwtAccessGuard implements CanActivate {
         include: { tokens: true },
         omit: { secret: true, password: true }
       });
+      if (!user) throw new UnauthorizedException();
 
       req.user = user as UserPayload;
 
