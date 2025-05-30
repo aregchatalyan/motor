@@ -7,6 +7,7 @@ import { AuthModule } from './api/auth/auth.module';
 import { UserModule } from './api/user/user.module';
 import { FileModule } from './api/file/file.module';
 import { MailerModule } from './mailer/mailer.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { MailerModule } from './mailer/mailer.module';
     AuthModule,
     UserModule,
     MailerModule,
-    FileModule
+    FileModule,
+    PrismaModule
   ]
 })
 export class AppModule {}
