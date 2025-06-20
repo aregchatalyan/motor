@@ -1,28 +1,35 @@
 services:
   database:
     image: postgres:16-alpine
+    container_name: db
     restart: unless-stopped
-    container_name: motor-db
     env_file: .env
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASS}
     ports:
       - "${POSTGRES_PORT}:5432"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d ${POSTGRES_DB} -U ${POSTGRES_USER}" ]
-      interval: 30s
-      timeout: 60s
-      retries: 3
-      start_period: 80s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
     volumes:
       - pg:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  server:
+    build: .
+    container_name: server
+    restart: always
+    depends_on:
+      - database
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - ./uploads:/usr/src/app/uploads
+    networks:
+      - app-network
+
+networks:
+  app-network:
 
 volumes:
   pg:

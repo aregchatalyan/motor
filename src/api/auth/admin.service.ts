@@ -16,8 +16,16 @@ export class AdminService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    const exists = await this.prisma.userRole.findFirst({
-      where: { role: $Enums.Role.admin }
+    const adminEmail = this.config.getOrThrow('ADMIN_EMAIL');
+    const adminMobile = this.config.getOrThrow('ADMIN_MOBILE');
+
+    const exists = await this.prisma.user.findUnique({
+      where: {
+        email: adminEmail,
+        roles: {
+          some: { role: $Enums.Role.admin }
+        }
+      }
     });
 
     if (!exists) {
@@ -27,9 +35,9 @@ export class AdminService implements OnApplicationBootstrap {
       const admin = await this.prisma.user.create({
         data: {
           name: 'admin',
-          surname: 'admin',
-          email: this.config.getOrThrow('ADMIN_EMAIL'),
-          mobile: this.config.getOrThrow('ADMIN_MOBILE'),
+          surname: '',
+          email: adminEmail,
+          mobile: adminMobile,
           password: passwordHash,
           active: true,
           confirmed: true,

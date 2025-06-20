@@ -11,7 +11,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "db:migrate": "npx prisma migrate deploy"
+    "start:docker": "prisma migrate deploy && npm run start:prod"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",

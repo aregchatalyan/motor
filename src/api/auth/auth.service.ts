@@ -23,8 +23,8 @@ export class AuthService {
   ) {}
 
   async signup(dto: SignUpDto) {
-    const exists = await this.prisma.user.findUnique({
-      where: { email: dto.email }
+    const exists = await this.prisma.user.findFirst({
+      where: { OR: [ { email: dto.email }, { mobile: dto.mobile } ] }
     });
     if (exists) throw new BadRequestException();
 
