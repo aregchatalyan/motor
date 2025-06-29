@@ -106,7 +106,7 @@ export class AuthService {
       await this.prisma.$transaction([
         this.prisma.user.update({
           where: { id: user.id },
-          data: { active: false }
+          data: { active: false, deletedAt: new Date() }
         }),
         this.prisma.token.deleteMany({
           where: { userId: user.id }
