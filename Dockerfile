@@ -1,62 +1,44 @@
-#############################
 # DEVELOPMENT
-#############################
-FROM node:22.16-alpine AS development
+FROM node:22-alpine AS development
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Install dependencies early for better layer caching
-COPY --chown=node:node package*.json ./
+COPY --chown=node:node package*.json .
+
 RUN npm ci
 
-# Copy source files
 COPY --chown=node:node . .
+COPY --chown=node:node .env .env
 
-# Generate Prisma client
 RUN npx prisma generate
 
-# Set non-root user
 USER node
 
-#############################
 # BUILD
-#############################
-FROM node:22.16-alpine AS build
+FROM node:22-alpine AS build
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy everything from dev
-COPY --chown=node:node --from=development /usr/src/app /usr/src/app
+COPY --chown=node:node --from=development /app /app
 
-# Build app
 RUN npm run build
-
-# Strip dev dependencies and clean cache
 RUN npm prune --omit=dev && npm cache clean --force
 
-#############################
 # PRODUCTION
-#############################
-FROM node:22.16-alpine AS production
+FROM node:22-alpine AS production
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy runtime essentials
-COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
-COPY --chown=node:node --from=build /usr/src/app/dist ./dist
-COPY --chown=node:node --from=build /usr/src/app/prisma ./prisma
-COPY --chown=node:node --from=build /usr/src/app/package*.json ./
+COPY --chown=node:node --from=build /app/node_modules ./node_modules
+COPY --chown=node:node --from=build /app/dist ./dist
+COPY --chown=node:node --from=build /app/prisma ./prisma
+COPY --chown=node:node --from=build /app/package*.json ./
+COPY --chown=node:node --from=build /app/.env .env
 
-# ✅ Ensure /uploads folder exists with correct ownership
-RUN mkdir -p /usr/src/app/uploads && chown -R node:node /usr/src/app/uploads
+RUN mkdir -p ./uploads && chown -R node:node ./uploads
 
-# Re-generate Prisma client (if needed)
-RUN npx prisma generate
-
-# Run as non-root for security
 USER node
 
-# Start server
-CMD [ "npm", "run", "start:docker" ]
+CMD [ "sh", "-c", "npx prisma migrate deploy && npm run start:prod" ]
