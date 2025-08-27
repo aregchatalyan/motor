@@ -1,10 +1,10 @@
 import { NextFunction } from 'express';
 import { Controller, Get, Next, UseGuards } from '@nestjs/common';
-import { JwtAccessGuard } from '../auth/guards/jwt-access.guard';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('uploads')
 export class FileController {
-  @UseGuards(JwtAccessGuard)
+  @UseGuards(AuthGuard)
   @Get(':filename')
   getFile(@Next() next: NextFunction) {
     next();

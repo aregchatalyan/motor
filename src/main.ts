@@ -3,22 +3,22 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
+import { ENV_CONFIG, EnvConfig } from './config/env';
 import { LoggerInterceptor } from './logger/logger.interceptor';
 
 (async () => {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  const config = app.get<ConfigService>(ConfigService);
-  const PORT = config.get<string>('PORT') || 3030;
-  const DEBUG = config.get<string>('DEBUG') === 'true';
-  const CLIENT_URL = config.getOrThrow<string>('CLIENT_URL');
+  const config = app.get(ConfigService);
+  const { PORT, DEBUG, CLIENTS } = config.getOrThrow<EnvConfig>(ENV_CONFIG);
 
   app.use(cookies());
 
   app.enableCors({
     credentials: true,
-    origin: CLIENT_URL
+    origin: CLIENTS
   });
 
   app.setGlobalPrefix('/api');
@@ -34,13 +34,12 @@ import { LoggerInterceptor } from './logger/logger.interceptor';
   const swaggerConfig = new DocumentBuilder()
     .addBearerAuth()
     .setTitle('Motor REST API')
-    .setDescription('Created by Nest.js')
     .setVersion('1.0')
     .build();
 
-  SwaggerModule.setup('api/docs', app, () => {
-    return SwaggerModule.createDocument(app, swaggerConfig);
-  }, { swaggerOptions: { defaultModelsExpandDepth: -1 } });
+  SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, swaggerConfig), {
+    swaggerOptions: { defaultModelsExpandDepth: -1 }
+  });
 
   await app.listen(PORT, () => {
     console.log('Server running on port:', PORT);

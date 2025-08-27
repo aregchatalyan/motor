@@ -1,38 +1,50 @@
 import { Request, Response } from 'express';
 import { ApiBearerAuth, ApiCookieAuth, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Ip,
+  ParseUUIDPipe,
+  Post,
+  Req,
+  Res,
+  UseGuards
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './auth.decorator';
-import { UserPayload } from './guards/types';
 import { AccessDto } from './dto/access.dto';
 import { SuccessDto } from './dto/success.dto';
 import { MeDataDto } from './dto/me/me-data.dto';
 import { SignUpDto } from './dto/sign-up/sign-up.dto';
 import { SignInDto } from './dto/sign-in/sign-in.dto';
-import { ConfirmDto } from './dto/confirm/confirm.dto';
-import { JwtAccessGuard } from './guards/jwt-access.guard';
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { AuthGuard, UserPayload } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
   @ApiCreatedResponse({ type: SuccessDto })
-  @Post('/signup')
-  signup(@Body() dto: SignUpDto) {
-    return this.auth.signup(dto);
+  @Post('signup')
+  signup(
+    @Ip() ip: string,
+    @Body() dto: SignUpDto
+  ) {
+    return this.auth.signup(dto, ip);
   }
 
   @ApiOkResponse({ type: AccessDto })
   @HttpCode(HttpStatus.OK)
-  @Post('/signin')
+  @Post('signin')
   async signin(
-    @Req() req: Request,
+    @Ip() ip: string,
     @Res({ passthrough: true }) res: Response,
     @Body() dto: SignInDto
   ) {
-    const agent = req.headers['user-agent'];
-    const { accessToken, refreshToken, maxAge } = await this.auth.signin(dto, agent);
+    const { accessToken, refreshToken, maxAge } = await this.auth.signin(dto, ip);
 
     res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge });
 
@@ -41,9 +53,9 @@ export class AuthController {
 
   @ApiBearerAuth()
   @ApiOkResponse({ type: SuccessDto })
-  @UseGuards(JwtAccessGuard)
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  @Post('/signout')
+  @Post('signout')
   async signout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response
@@ -59,41 +71,41 @@ export class AuthController {
 
   @ApiOkResponse({ type: SuccessDto })
   @HttpCode(HttpStatus.OK)
-  @Post('/confirm')
-  confirm(@Body() body: ConfirmDto) {
-    return this.auth.confirm(body.secret);
+  @Post('verify')
+  confirm(@Body('token', ParseUUIDPipe) token: string) {
+    return this.auth.confirm(token);
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAccessGuard)
+  @UseGuards(AuthGuard)
   @ApiOkResponse({ type: MeDataDto })
-  @Get('/me')
+  @Get('me')
   me(@CurrentUser() user: UserPayload) {
     return this.auth.me(user);
   }
 
   @ApiBearerAuth()
   @ApiOkResponse({ type: SuccessDto })
-  @UseGuards(JwtAccessGuard)
-  @Delete('/remove')
+  @UseGuards(AuthGuard)
+  @Delete('remove')
   remove(@CurrentUser() user: UserPayload) {
     return this.auth.remove(user);
   }
 
   @ApiCookieAuth()
   @ApiOkResponse({ type: AccessDto })
-  @UseGuards(JwtRefreshGuard)
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  @Post('/refresh')
+  @Post('refresh')
   async refresh(
+    @Ip() ip: string,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
     @CurrentUser() user: UserPayload
   ) {
-    const agent = req.headers['user-agent'];
-    const token = req.cookies['refreshToken'] as string;
+    const { refreshToken: token } = req.cookies;
 
-    const { accessToken, refreshToken, maxAge } = await this.auth.refresh(user, token, agent);
+    const { accessToken, refreshToken, maxAge } = await this.auth.refresh(user, token, ip);
 
     res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge });
 

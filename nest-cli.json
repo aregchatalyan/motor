@@ -3,18 +3,19 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "deleteOutDir": true,
     "assets": [
       {
         "include": "**/*.hbs"
       }
     ],
+    "deleteOutDir": true,
     "plugins": [
       {
         "name": "@nestjs/swagger",
         "options": {
           "classValidatorShim": true,
-          "introspectComments": true
+          "introspectComments": true,
+          "skipAutoHttpCode": true
         }
       }
     ]

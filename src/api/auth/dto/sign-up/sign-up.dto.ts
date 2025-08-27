@@ -1,16 +1,9 @@
-import { IsEmail, IsMobilePhone, IsString, IsStrongPassword, Length } from 'class-validator';
+import { IsEmail, IsString, IsStrongPassword, Length } from 'class-validator';
 
 export class SignUpDto {
   @IsString()
   @Length(3, 20)
-  name: string;
-
-  @IsString()
-  @Length(3, 20)
-  surname: string;
-
-  @IsMobilePhone('am-AM', { strictMode: true })
-  mobile: string;
+  username: string;
 
   @IsEmail()
   email: string;
