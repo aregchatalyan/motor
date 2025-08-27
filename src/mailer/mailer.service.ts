@@ -1,11 +1,42 @@
 import { Injectable } from '@nestjs/common';
-import { MailerService as Mailer } from '@nestjs-modules/mailer';
+import { ISendMailOptions, MailerService as Mailer } from '@nestjs-modules/mailer';
+
+interface AdminMailContext {
+  email: string;
+  password: string;
+}
+
+interface SignUpMailContext {
+  email: string;
+  token: string;
+}
+
+interface MailerPayload<T extends Record<string, any>> {
+  to: string;
+  context: T;
+}
 
 @Injectable()
 export class MailerService {
   constructor(private readonly mailer: Mailer) {}
 
-  async sendMail({ to, subject, template, context }) {
-    await this.mailer.sendMail({ to, subject, template, context });
+  private async sendMail(options: ISendMailOptions) {
+    return this.mailer.sendMail(options);
+  }
+
+  async sendAdminEmail(payload: MailerPayload<AdminMailContext>) {
+    return this.sendMail({
+      ...payload,
+      subject: 'Your admin account credentials',
+      template: 'admin',
+    });
+  }
+
+  async sendSignUpEmail(payload: MailerPayload<SignUpMailContext>) {
+    return this.sendMail({
+      ...payload,
+      subject: 'Welcome to our service',
+      template: 'confirm'
+    });
   }
 }
