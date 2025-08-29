@@ -1,5 +1,15 @@
 import { Request, Response } from 'express';
-import { ApiBearerAuth, ApiCookieAuth, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCookieAuth,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse
+} from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -23,11 +33,14 @@ import { SignUpDto } from './dto/sign-up/sign-up.dto';
 import { SignInDto } from './dto/sign-in/sign-in.dto';
 import { AuthGuard, UserPayload } from './auth.guard';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
-  @ApiCreatedResponse({ type: SuccessDto })
+  @ApiOperation({ summary: 'Create a new user account' })
+  @ApiCreatedResponse({ description: 'User account created successfully', type: SuccessDto })
+  @ApiBadRequestResponse({ description: 'User already exists' })
   @Post('signup')
   signup(
     @Ip() ip: string,
@@ -36,7 +49,10 @@ export class AuthController {
     return this.auth.signup(dto, ip);
   }
 
-  @ApiOkResponse({ type: AccessDto })
+  @ApiOperation({ summary: 'Authenticate and sign in a user' })
+  @ApiOkResponse({ description: 'Successfully signed in, returns access token', type: AccessDto })
+  @ApiBadRequestResponse({ description: 'Incorrect password or invalid request' })
+  @ApiNotFoundResponse({ description: 'User not found' })
   @HttpCode(HttpStatus.OK)
   @Post('signin')
   async signin(
@@ -51,8 +67,10 @@ export class AuthController {
     return { accessToken };
   }
 
+  @ApiOperation({ summary: 'Sign out the current user' })
   @ApiBearerAuth()
-  @ApiOkResponse({ type: SuccessDto })
+  @ApiOkResponse({ description: 'User successfully signed out', type: SuccessDto })
+  @ApiUnauthorizedResponse({ description: 'Invalid or missing refresh token' })
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('signout')
@@ -69,31 +87,40 @@ export class AuthController {
     return { success };
   }
 
-  @ApiOkResponse({ type: SuccessDto })
+  @ApiOperation({ summary: 'Confirm user account with a verification token' })
+  @ApiOkResponse({ description: 'Account verified successfully', type: SuccessDto })
+  @ApiBadRequestResponse({ description: 'Invalid token or user is not active' })
   @HttpCode(HttpStatus.OK)
   @Post('verify')
   confirm(@Body('token', ParseUUIDPipe) token: string) {
     return this.auth.confirm(token);
   }
 
+  @ApiOperation({ summary: 'Get current user profile' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
-  @ApiOkResponse({ type: MeDataDto })
+  @ApiOkResponse({ description: 'Returns user profile data', type: MeDataDto })
+  @ApiUnauthorizedResponse({ description: 'Invalid or missing access token' })
   @Get('me')
   me(@CurrentUser() user: UserPayload) {
     return this.auth.me(user);
   }
 
+  @ApiOperation({ summary: 'Deactivate and soft-delete the current user account' })
   @ApiBearerAuth()
-  @ApiOkResponse({ type: SuccessDto })
+  @ApiOkResponse({ description: 'Account successfully removed', type: SuccessDto })
+  @ApiBadRequestResponse({ description: 'User could not be removed' })
+  @ApiUnauthorizedResponse({ description: 'Invalid or missing access token' })
   @UseGuards(AuthGuard)
   @Delete('remove')
   remove(@CurrentUser() user: UserPayload) {
     return this.auth.remove(user);
   }
 
+  @ApiOperation({ summary: 'Refresh access token using a refresh token' })
   @ApiCookieAuth()
-  @ApiOkResponse({ type: AccessDto })
+  @ApiOkResponse({ description: 'Access token refreshed successfully', type: AccessDto })
+  @ApiUnauthorizedResponse({ description: 'Invalid or expired refresh token' })
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('refresh')

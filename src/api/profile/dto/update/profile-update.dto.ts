@@ -24,7 +24,7 @@ export class ProfileUpdateDto {
 
   @IsOptional()
   @IsEnum(GenderEnum)
-  gender?: GenderEnum;
+  gender?: GenderEnum = GenderEnum.MALE;
 
   @IsOptional()
   @IsDateString()

@@ -17,10 +17,7 @@ services:
     restart: always
     depends_on:
       - database
-    env_file:
-      - .env
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
+    env_file: .env
     ports:
       - "${PORT}:${PORT}"
     volumes:

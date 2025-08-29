@@ -3,12 +3,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { envConfig } from './config/env';
 import { AuthModule } from './api/auth/auth.module';
-import { ProfileModule } from './api/profile/profile.module';
 import { FileModule } from './api/file/file.module';
 import { MailerModule } from './mailer/mailer.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { envConfig } from './config/env';
+import { ProfileModule } from './api/profile/profile.module';
 
 @Module({
   imports: [
@@ -23,10 +23,10 @@ import { envConfig } from './config/env';
       serveRoot: '/uploads'
     }),
     AuthModule,
-    ProfileModule,
-    MailerModule,
     FileModule,
-    PrismaModule
+    MailerModule,
+    PrismaModule,
+    ProfileModule
   ]
 })
 export class AppModule {}
