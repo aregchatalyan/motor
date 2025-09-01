@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import cookies from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
@@ -9,7 +11,12 @@ import { ENV_CONFIG, EnvConfig } from './config/env';
 import { LoggerInterceptor } from './logger/logger.interceptor';
 
 (async () => {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    httpsOptions: {
+      key: fs.readFileSync(path.join(__dirname, '/secrets/key.pem')),
+      cert: fs.readFileSync(path.join(__dirname, '/secrets/cert.pem'))
+    }
+  });
 
   const config = app.get(ConfigService);
   const { PORT, DEBUG, CLIENTS } = config.getOrThrow<EnvConfig>(ENV_CONFIG);

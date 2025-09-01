@@ -3,11 +3,7 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "assets": [
-      {
-        "include": "**/*.hbs"
-      }
-    ],
+    "assets": [ "mailer/templates/*.hbs", "secrets/*.pem" ],
     "deleteOutDir": true,
     "plugins": [
       {
