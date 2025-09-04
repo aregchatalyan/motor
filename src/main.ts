@@ -32,8 +32,7 @@ import { LoggerInterceptor } from './logger/logger.interceptor';
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
-    transform: true,
-    forbidNonWhitelisted: true
+    transform: true
   }));
 
   if (DEBUG) app.useGlobalInterceptors(new LoggerInterceptor());
@@ -51,4 +50,6 @@ import { LoggerInterceptor } from './logger/logger.interceptor';
   await app.listen(PORT, () => {
     console.log('Server running on port:', PORT);
   });
+  console.log(DEBUG)
+
 })();

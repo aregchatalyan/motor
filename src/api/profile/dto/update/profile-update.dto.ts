@@ -1,13 +1,4 @@
-import {
-  IsDateString,
-  IsEnum,
-  IsMobilePhone,
-  IsOptional,
-  IsPhoneNumber,
-  IsString,
-  IsUrl,
-  Length
-} from 'class-validator';
+import { IsDateString, IsEnum, IsMobilePhone, IsOptional, IsPhoneNumber, IsString, Length } from 'class-validator';
 import { Optional } from '@nestjs/common';
 import { GenderEnum } from 'prisma/client';
 
@@ -29,10 +20,6 @@ export class ProfileUpdateDto {
   @IsOptional()
   @IsDateString()
   birthday?: Date;
-
-  @IsOptional()
-  @IsUrl()
-  avatar?: string;
 
   @Optional()
   @IsString()

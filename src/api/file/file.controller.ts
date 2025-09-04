@@ -1,10 +1,10 @@
 import { NextFunction } from 'express';
-import { ApiBearerAuth, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Controller, Get, Next, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth.guard';
 
 @ApiTags('Files')
-@Controller('/uploads')
+@Controller('uploads')
 export class FileController {
   @ApiOperation({ summary: 'Get file by name' })
   @ApiBearerAuth()

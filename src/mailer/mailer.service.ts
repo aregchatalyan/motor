@@ -28,7 +28,7 @@ export class MailerService {
     return this.sendMail({
       ...payload,
       subject: 'Your admin account credentials',
-      template: 'admin',
+      template: 'admin'
     });
   }
 

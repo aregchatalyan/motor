@@ -92,8 +92,8 @@ export class AuthController {
   @ApiBadRequestResponse({ description: 'Invalid token or user is not active' })
   @HttpCode(HttpStatus.OK)
   @Post('verify')
-  confirm(@Body('token', ParseUUIDPipe) token: string) {
-    return this.auth.confirm(token);
+  verify(@Body('token', ParseUUIDPipe) token: string) {
+    return this.auth.verify(token);
   }
 
   @ApiOperation({ summary: 'Get current user profile' })

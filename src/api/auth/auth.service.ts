@@ -103,11 +103,11 @@ export class AuthService {
     }
   }
 
-  async confirm(token: string) {
+  async verify(token: string) {
     try {
       await this.prisma.token.update({
         where: { token, user: { active: true } },
-        data: { user: { update: { verified: true } } }
+        data: { usedAt: new Date(), user: { update: { verified: true } } }
       });
 
       return { success: true }
