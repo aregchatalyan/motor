@@ -5,7 +5,7 @@ export const validate = <T extends object>(
   schema: ClassConstructor<T>,
   config: Record<string, unknown>
 ): T => {
-  const validatedConfig = plainToInstance(schema, config, { enableImplicitConversion: true });
+  const validatedConfig = plainToInstance(schema, config);
 
   const results = validateSync(validatedConfig, { whitelist: true, skipMissingProperties: false });
 

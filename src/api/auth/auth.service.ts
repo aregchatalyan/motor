@@ -75,7 +75,7 @@ export class AuthService {
     if (!correct) throw new BadRequestException();
 
     const { expiresIn, ...tokens } = this.generateTokens({
-      sub: user.id, email: user.email
+      sub: user.id, email: user.email, roles: user.roles
     });
 
     await this.prisma.token.create({
@@ -144,7 +144,7 @@ export class AuthService {
 
   async refresh(user: UserPayload, token: string, ip?: string) {
     const { expiresIn, ...tokens } = this.generateTokens({
-      sub: user.id, email: user.email
+      sub: user.id, email: user.email, roles: user.roles
     });
 
     try {

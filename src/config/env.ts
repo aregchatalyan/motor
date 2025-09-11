@@ -9,6 +9,7 @@ class EnvSchema {
   @IsPort()
   PORT: string;
   @IsBoolean()
+  @Transform(({ value }) => value === 'true')
   DEBUG: boolean;
 
   @IsString()
@@ -34,6 +35,7 @@ class EnvSchema {
   @IsNotEmpty()
   SMTP_PASS: string;
   @IsBoolean()
+  @Transform(({ value }) => value === 'true')
   SMTP_SECURE: boolean;
 
   @IsString()

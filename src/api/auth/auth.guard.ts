@@ -1,18 +1,19 @@
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { TokenEnum, User } from 'prisma/client';
 import { EnvConfig, envConfig } from '../../config/env';
+import { RoleEnum, TokenEnum, User } from 'prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
 export interface JwtPayload {
   sub: number;
   email: string;
+  roles: RoleEnum[];
   iat?: number;
   exp?: number;
 }
 
-export type UserPayload = Pick<User, 'id' | 'email'>;
+export type UserPayload = Pick<User, 'id' | 'email' | 'roles'>;
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -48,7 +49,11 @@ export class AuthGuard implements CanActivate {
         include: { user: true }
       });
 
-      req.user = { id: data.user.id, email: data.user.email };
+      req.user = {
+        id: data.user.id,
+        email: data.user.email,
+        roles: data.user.roles
+      }
 
       return true;
     } catch (e) {

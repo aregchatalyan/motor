@@ -50,6 +50,4 @@ import { LoggerInterceptor } from './logger/logger.interceptor';
   await app.listen(PORT, () => {
     console.log('Server running on port:', PORT);
   });
-  console.log(DEBUG)
-
 })();
