@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserPayload } from '../auth/auth.guard';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ProfileCreateDto } from './dto/update/profile-create.dto';
-import { ProfileUpdateDto } from './dto/update/profile-update.dto';
+import { ProfileCreateDto } from './dto/profile-create.dto';
+import { ProfileUpdateDto } from './dto/profile-update.dto';
 
 @Injectable()
 export class ProfileService {

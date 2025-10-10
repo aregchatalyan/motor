@@ -28,9 +28,9 @@ import { AuthService } from './auth.service';
 import { CurrentUser } from './auth.decorator';
 import { AccessDto } from './dto/access.dto';
 import { SuccessDto } from './dto/success.dto';
-import { MeDataDto } from './dto/me/me-data.dto';
-import { SignUpDto } from './dto/sign-up/sign-up.dto';
-import { SignInDto } from './dto/sign-in/sign-in.dto';
+import { MeDataDto } from './dto/me-data.dto';
+import { SignUpDto } from './dto/sign-up.dto';
+import { SignInDto } from './dto/sign-in.dto';
 import { AuthGuard, UserPayload } from './auth.guard';
 
 @ApiTags('Auth')

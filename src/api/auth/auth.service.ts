@@ -11,8 +11,8 @@ import {
   UnauthorizedException
 } from '@nestjs/common';
 import { compare, hash } from '../../utils/bcrypt';
-import { SignUpDto } from './dto/sign-up/sign-up.dto';
-import { SignInDto } from './dto/sign-in/sign-in.dto';
+import { SignUpDto } from './dto/sign-up.dto';
+import { SignInDto } from './dto/sign-in.dto';
 import { JwtPayload, UserPayload } from './auth.guard';
 import { envConfig, EnvConfig } from '../../config/env';
 import { MailerService } from '../../mailer/mailer.service';

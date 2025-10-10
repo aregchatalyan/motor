@@ -14,9 +14,9 @@ import { ProfileService } from './profile.service';
 import { CurrentUser } from '../auth/auth.decorator';
 import { AuthGuard, UserPayload } from '../auth/auth.guard';
 import { SuccessDto } from '../auth/dto/success.dto';
-import { ProfileDataDto } from './dto/update/profile-data.dto';
-import { ProfileCreateDto } from './dto/update/profile-create.dto';
-import { ProfileUpdateDto } from './dto/update/profile-update.dto';
+import { ProfileDataDto } from './dto/profile-data.dto';
+import { ProfileCreateDto } from './dto/profile-create.dto';
+import { ProfileUpdateDto } from './dto/profile-update.dto';
 
 @ApiTags('Profile')
 @Controller('profile')
