@@ -1,6 +1,6 @@
 import { ConfigType, registerAs } from '@nestjs/config';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsFQDN, IsIP, IsNotEmpty, IsPort, IsString, IsUrl, Matches } from 'class-validator';
+import { IsBoolean, IsEmail, IsFQDN, IsInt, IsIP, IsNotEmpty, IsPort, IsString, IsUrl, Matches } from 'class-validator';
 import { validate } from './validate';
 
 class EnvSchema {
@@ -11,6 +11,12 @@ class EnvSchema {
   @IsBoolean()
   @Transform(({ value }) => value === 'true')
   DEBUG: boolean;
+  @IsInt()
+  @Transform(({ value }) => Number(value))
+  THROTTLE_TTL: number;
+  @IsInt()
+  @Transform(({ value }) => Number(value))
+  THROTTLE_LIMIT: number;
 
   @IsString()
   @Matches(/^[a-f0-9]{20,}$/i, { message: 'JWT_ACCESS_SECRET must be at least 20 hex characters' })

@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { RoleEnum } from 'prisma/client';
 import { hash } from '../../utils/bcrypt';
 import { EnvConfig, envConfig } from '../../config/env';
@@ -8,6 +8,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class AdminService implements OnApplicationBootstrap {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(
     @Inject(envConfig.KEY)
     private readonly config: EnvConfig,
@@ -41,13 +43,13 @@ export class AdminService implements OnApplicationBootstrap {
         await this.mailer.sendAdminEmail({ to: ADMIN_EMAIL, context: { email: ADMIN_EMAIL, password } });
       } catch (e) {
         if (e.code === 'P2002') {
-          console.log('Admin account already exists');
+          this.logger.warn('Admin account already exists');
         } else {
-          console.error('Failed to create admin account:', e.message);
+          this.logger.error(`Failed to create admin account: ${ e.message }`);
         }
       }
     } else {
-      console.log(`Admin account already exists: ${ admin.email }`);
+      this.logger.warn(`Admin account already exists: ${ admin.email }`);
     }
   }
 }
