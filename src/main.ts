@@ -11,12 +11,14 @@ import { ENV_CONFIG, EnvConfig } from './config/env';
 import { LoggerInterceptor } from './logger/logger.interceptor';
 
 (async () => {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    httpsOptions: {
-      key: fs.readFileSync(path.join(__dirname, '/secrets/key.pem')),
-      cert: fs.readFileSync(path.join(__dirname, '/secrets/cert.pem'))
-    }
-  });
+  const [ _, mode ] = process.env.npm_lifecycle_event?.split(':') || [];
+
+  const httpsOptions = mode === 'dev' ? {
+    key: fs.readFileSync(path.join(__dirname, '/secrets/key.pem')),
+    cert: fs.readFileSync(path.join(__dirname, '/secrets/cert.pem'))
+  } : {};
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { httpsOptions });
 
   const config = app.get(ConfigService);
   const { PORT, DEBUG, CLIENTS } = config.getOrThrow<EnvConfig>(ENV_CONFIG);
