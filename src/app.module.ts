@@ -7,7 +7,6 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { EnvConfig, envConfig } from './config/env';
 import { AuthModule } from './api/auth/auth.module';
-import { FileModule } from './api/file/file.module';
 import { MailerModule } from './mailer/mailer.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProfileModule } from './api/profile/profile.module';
@@ -35,7 +34,6 @@ import { ProfileModule } from './api/profile/profile.module';
       serveRoot: '/api/uploads'
     }),
     AuthModule,
-    FileModule,
     MailerModule,
     PrismaModule,
     ProfileModule

@@ -1,5 +1,6 @@
-import { ConfigType, registerAs } from '@nestjs/config';
+import { StringValue } from 'ms';
 import { Transform } from 'class-transformer';
+import { ConfigType, registerAs } from '@nestjs/config';
 import { IsBoolean, IsEmail, IsFQDN, IsInt, IsIP, IsNotEmpty, IsPort, IsString, IsUrl, Matches } from 'class-validator';
 import { validate } from './validate';
 
@@ -26,10 +27,10 @@ class EnvSchema {
   JWT_REFRESH_SECRET: string;
   @IsString()
   @Matches(/^\d+([mhd])$/i, { message: 'JWT_ACCESS_EXPIRES must be like "15m", "1h", or "7d"' })
-  JWT_ACCESS_EXPIRES: string;
+  JWT_ACCESS_EXPIRES: StringValue;
   @IsString()
   @Matches(/^\d+([mhd])$/i, { message: 'JWT_REFRESH_EXPIRES must be like "15m", "1h", or "7d"' })
-  JWT_REFRESH_EXPIRES: string;
+  JWT_REFRESH_EXPIRES: StringValue;
 
   @IsFQDN()
   SMTP_HOST: string;

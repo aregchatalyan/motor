@@ -1,5 +1,5 @@
-import { IsDateString, IsEnum, IsMobilePhone, IsNotEmpty, IsPhoneNumber, IsString, Length } from 'class-validator';
 import { GenderEnum } from 'prisma/client';
+import { IsDateString, IsEnum, IsMobilePhone, IsNotEmpty, IsPhoneNumber, IsString, Length } from 'class-validator';
 
 export class ProfileCreateDto {
   @IsString()

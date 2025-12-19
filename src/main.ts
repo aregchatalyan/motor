@@ -1,24 +1,16 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import cookies from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import { ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ENV_CONFIG, EnvConfig } from './config/env';
-import { LoggerInterceptor } from './logger/logger.interceptor';
+import { HttpExceptionFilter } from './common/http.filter';
+import { HttpInterceptor } from './common/http.interceptor';
+import { LoggerInterceptor } from './common/logger.interceptor';
 
 (async () => {
-  const [ _, mode ] = process.env.npm_lifecycle_event?.split(':') || [];
-
-  const httpsOptions = mode === 'dev' ? {
-    key: fs.readFileSync(path.join(__dirname, '/secrets/key.pem')),
-    cert: fs.readFileSync(path.join(__dirname, '/secrets/cert.pem'))
-  } : {};
-
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { httpsOptions });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const config = app.get(ConfigService);
   const { PORT, DEBUG, CLIENTS } = config.getOrThrow<EnvConfig>(ENV_CONFIG);
@@ -32,22 +24,25 @@ import { LoggerInterceptor } from './logger/logger.interceptor';
 
   app.setGlobalPrefix('/api');
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    transform: true
-  }));
-
+  app.useGlobalInterceptors(new HttpInterceptor());
   if (DEBUG) app.useGlobalInterceptors(new LoggerInterceptor());
 
-  const swaggerConfig = new DocumentBuilder()
-    .addBearerAuth()
-    .setTitle('Motor REST API')
-    .setVersion('1.0')
-    .build();
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    transform: true,
+    exceptionFactory: (errors) => {
+      return new BadRequestException(
+        errors.reduce((acc, e) => {
+          if (e.constraints) {
+            acc[e.property] = Object.values(e.constraints);
+          }
+          return acc;
+        }, {} as Record<string, string[]>)
+      );
+    }
+  }));
 
-  SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, swaggerConfig), {
-    swaggerOptions: { defaultModelsExpandDepth: -1 }
-  });
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   await app.listen(PORT, () => {
     console.log('Server running on port:', PORT);

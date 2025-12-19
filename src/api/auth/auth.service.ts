@@ -10,14 +10,14 @@ import {
   NotFoundException,
   UnauthorizedException
 } from '@nestjs/common';
-import { compare, hash } from '../../utils/bcrypt';
+import { TokenEnum } from 'prisma/client';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
+import { compare, hash } from '../../utils/bcrypt';
 import { JwtPayload, UserPayload } from './auth.guard';
 import { envConfig, EnvConfig } from '../../config/env';
 import { MailerService } from '../../mailer/mailer.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { TokenEnum } from 'prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -35,7 +35,7 @@ export class AuthService {
     const exists = await this.prisma.user.findFirst({
       where: { OR: [ { username: dto.username }, { email: dto.email } ] }
     });
-    if (exists) throw new BadRequestException();
+    if (exists) throw new BadRequestException('User already exists');
 
     const token = randomUUID();
     const password = await hash(dto.password);
@@ -48,7 +48,7 @@ export class AuthService {
           create: {
             ip,
             token,
-            expiredAt: new Date(Date.now() + 86400)
+            expiredAt: new Date(Date.now() + ms(this.config.JWT_REFRESH_EXPIRES))
           }
         }
       }
@@ -62,7 +62,7 @@ export class AuthService {
     return { success: true }
   }
 
-  async signin(dto: SignInDto, ip?: string) {
+  async signIn(dto: SignInDto, ip?: string) {
     const user = await this.prisma.user.findFirst({
       where: {
         OR: [ { username: dto.username }, { email: dto.email } ],
@@ -74,7 +74,7 @@ export class AuthService {
     const correct = await compare(dto.password, user.password);
     if (!correct) throw new BadRequestException();
 
-    const { expiresIn, ...tokens } = this.generateTokens({
+    const { maxAge, ...tokens } = this.generateTokens({
       sub: user.id, email: user.email, roles: user.roles
     });
 
@@ -83,15 +83,15 @@ export class AuthService {
         ip,
         token: tokens.refreshToken,
         type: TokenEnum.REFRESH,
-        expiredAt: new Date(Date.now() + ms(expiresIn)),
+        expiredAt: new Date(Date.now() + ms(maxAge)),
         user: { connect: { id: user.id } }
       }
     });
 
-    return { ...tokens, maxAge: ms(expiresIn) };
+    return { ...tokens, maxAge: ms(maxAge) };
   }
 
-  async signout(refreshToken: string) {
+  async signOut(refreshToken: string) {
     try {
       await this.prisma.token.delete({
         where: { token: refreshToken, type: TokenEnum.REFRESH }
@@ -143,7 +143,7 @@ export class AuthService {
   }
 
   async refresh(user: UserPayload, token: string, ip?: string) {
-    const { expiresIn, ...tokens } = this.generateTokens({
+    const { maxAge, ...tokens } = this.generateTokens({
       sub: user.id, email: user.email, roles: user.roles
     });
 
@@ -153,7 +153,7 @@ export class AuthService {
         data: { ip, token: tokens.refreshToken }
       });
 
-      return { ...tokens, maxAge: ms(expiresIn) }
+      return { ...tokens, maxAge: ms(maxAge) }
     } catch (e) {
       throw new UnauthorizedException();
     }
@@ -168,7 +168,7 @@ export class AuthService {
         expiresIn,
         secret: this.config.JWT_REFRESH_SECRET
       }),
-      expiresIn
+      maxAge: expiresIn
     }
   }
 
