@@ -7,7 +7,6 @@ node_modules
 
 # files
 uploads
-prisma/client
 
 # Logs
 logs
